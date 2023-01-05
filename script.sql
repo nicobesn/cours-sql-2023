@@ -105,7 +105,9 @@ LIKE '_78__';
 
 -- Exercice 17: Lister le chiffre d'affaire (somme des paiements), regroupés par année
 
-
+SELECT YEAR(paymentDate) as "année", SUM(amount) as "CA" 
+FROM payments 
+GROUP BY année; 
 
 -- Exercice 18: Lister le chiffre d'affaire (somme des paiements), regroupés par année et mois. ordonnés chronologiquement
 
@@ -123,24 +125,37 @@ LIMIT 1;
 
 -- Exercice 20: Les employés ont des responsables (reportsTo). Retournez les employés n'ayant pas de supérieur
 
-
+SELECT * FROM employees 
+WHERE employees.reportsTo IS NULL; 
 
 -- Exercice 21: Retourner les employés (employeeNumber, firstName, lastName) ayant le plus de responsabilités (le plus de reportsTo associés)
 
-
+WITH cte(employeeNumber, firstName, lastName, underlings) AS (
+    SELECT e.employeeNumber, e.firstName, e.lastName, count(e2.employeeNumber) as 'underlings'
+    FROM employees e
+    JOIN employees e2 on e2.reportsTo = e.employeeNumber
+    GROUP by e.employeeNumber
+)
+SELECT cte.employeeNumber, cte.firstName, cte.lastName
+FROM cte
+WHERE cte.underlings = (SELECT MAX(underlings) from cte);
 
 -- Exercice 22: Une erreur logicielle a eu lien, incrémentez toutes les factures de 5$.
 
-
+UPDATE payments SET amount = amount + 5;
 
 -- Exercice 23: Avez-vous remarqué que la table des paiements n'est pas liée aux orders? Comparez le montant des commandes par rapport aux paiements , regroupés par client
 
-SELECT o.customerNumber, p.amount as "Montant payement", SUM(od.quantityOrdered * od.priceEach) as "Montant commande" 
-FROM orderdetails od 
-JOIN orders o ON o.orderNumber = od.orderNumber
-JOIN customers c ON o.customerNumber = c.customerNumber
-JOIN payments p ON c.customerNumber = p.customerNumber
-GROUP BY o.customerNumber;
+SELECT p.customerNumber, p.paiements, orders.ordres
+FROM 
+    (SELECT payments.customerNumber, SUM(payments.amount) as "paiements"
+        FROM payments GROUP BY customerNumber) p
+        JOIN
+    (SELECT o.customerNumber, SUM(od.quantityOrdered * od.priceEach) as "ordres"
+        FROM orderdetails od
+        JOIN orders o ON o.orderNumber = od.orderNumber
+GROUP BY o.customerNumber) orders
+ON orders.customerNumber = p.customerNumber;
 
 -- Exercice 24: Les produits se vendent à des prix variants dans le temps. Retournez pour chaque produit le montant max et le montant min de la table orderdetails, ainsi que son prix actuel dans la table products
 
