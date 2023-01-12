@@ -153,8 +153,8 @@ FROM
         JOIN
     (SELECT o.customerNumber, SUM(od.quantityOrdered * od.priceEach) as "ordres"
         FROM orderdetails od
-        JOIN orders o ON o.orderNumber = od.orderNumber
-GROUP BY o.customerNumber) orders
+        JOIN orders o ON o.orderNumber = od.orderNumber)
+GROUP BY o.customerNumber orders
 ON orders.customerNumber = p.customerNumber;
 
 -- Exercice 24: Les produits se vendent à des prix variants dans le temps. Retournez pour chaque produit le montant max et le montant min de la table orderdetails, ainsi que son prix actuel dans la table products
